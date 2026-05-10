@@ -15,7 +15,7 @@
 
 ### 2. 多格式音訊轉檔
 
-整合 NAudio 與 NReco.VideoConverter 提供四種轉檔選擇：
+利用 NReco.VideoConverter 提供四種轉檔選擇：
 
 * **MP3**：高相容性的普及有損格式。
 
