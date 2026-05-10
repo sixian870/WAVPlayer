@@ -40,11 +40,18 @@ namespace WAV音效檔播放器
             if (string.IsNullOrWhiteSpace(txtPath.Text) || !File.Exists(txtPath.Text))
             {
                 MessageBox.Show("請先選擇有效的 WAV 檔案！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                btnBrowse.Focus();
                 return;
             }
             try
             {
-                if (player != null) player.Stop(); // 先停止當前播放
+                if(player != null)
+    {
+                    player.Stop();
+                    player.Dispose();
+                    player = null;
+                }
+
                 player = new SoundPlayer(); // 建立播放器物件
                 player.SoundLocation = txtPath.Text; // 指定音效所在路徑檔名
                 player.Load(); // 載入音效檔資料
@@ -53,6 +60,7 @@ namespace WAV音效檔播放器
             catch (Exception ex)
             {
                 MessageBox.Show("無法播放音效檔 : "+ex.Message, "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                btnBrowse.Focus();
             }
         }
 
@@ -62,17 +70,25 @@ namespace WAV音效檔播放器
             if (string.IsNullOrWhiteSpace(txtPath.Text) || !File.Exists(txtPath.Text))
             {
                 MessageBox.Show("請先選擇有效的 WAV 檔案！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                btnBrowse.Focus();
                 return;
             }
             try
             {
-                if (player != null) player.Stop(); // 先停止當前播放
+                if (player != null)
+                {
+                    player.Stop();
+                    player.Dispose();
+                    player = null;
+                }
+
                 player = new SoundPlayer(txtPath.Text);
                 player.PlayLooping();// 重複播放
             }
             catch (Exception ex)
             {
                 MessageBox.Show("無法播放音效檔 : " + ex.Message, "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                btnBrowse.Focus();
             }
         }
 
@@ -81,6 +97,8 @@ namespace WAV音效檔播放器
             if (player != null)
             {
                 player.Stop();
+                player.Dispose();
+                player = null;
             }
         }
 
@@ -105,12 +123,14 @@ namespace WAV音效檔播放器
             if (string.IsNullOrWhiteSpace(txtPath.Text) || !File.Exists(txtPath.Text))
             {
                 MessageBox.Show("請先選擇要轉換的有效 WAV 檔案！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                btnBrowse.Focus();
                 return;
             }
 
             if (Path.GetExtension(txtPath.Text).ToLower() != ".wav")
             {
                 MessageBox.Show("請確定選擇的是 WAV 檔案！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                btnBrowse.Focus();
                 return;
             }
 
@@ -122,8 +142,12 @@ namespace WAV音效檔播放器
 
             if (sfdSave.ShowDialog() == DialogResult.OK)
             {
-                // 暫停播放，釋放音效檔佔用
-                if (player != null) player.Stop();
+                if (player != null)
+                {
+                    player.Stop();
+                    player.Dispose();
+                    player = null;
+                }
 
                 this.Text = "WAV音效檔播放器 - 轉檔中請稍候...";
                 Application.DoEvents(); // 強制刷新畫面
@@ -165,6 +189,7 @@ namespace WAV音效檔播放器
                 catch (Exception ex)
                 {
                     MessageBox.Show("轉檔失敗 : " + ex.Message, "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    btnBrowse.Focus();
                 }
                 finally
                 {
