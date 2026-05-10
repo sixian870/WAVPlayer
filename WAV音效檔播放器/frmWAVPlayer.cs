@@ -9,9 +9,9 @@ using System.Media; // 引用System.Media命名空間
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using NAudio.Wave; // 引用NAudio命名空間
+//using NAudio.Wave; // 引用NAudio命名空間
 using NReco.VideoConverter; // 引用NReco.VideoConverter命名空間
-using NAudio.Lame; // 引用NAudio.Lame命名空間
+//using NAudio.Lame; // 引用NAudio.Lame命名空間
 
 namespace WAV音效檔播放器
 {
@@ -142,6 +142,7 @@ namespace WAV音效檔播放器
 
             if (sfdSave.ShowDialog() == DialogResult.OK)
             {
+                // 釋放播放器佔用的資源與檔案鎖定
                 if (player != null)
                 {
                     player.Stop();
@@ -154,35 +155,31 @@ namespace WAV音效檔播放器
 
                 try
                 {
-                    // NAudio 支援 MP3, AAC, WMA 格式轉換，FLAC 需要使用 NReco (底層為 FFmpeg) 處理
-                    if (sfdSave.FilterIndex >= 1 && sfdSave.FilterIndex <= 3)
+                    // 建立 NReco 轉換器物件
+                    var ffMpeg = new FFMpegConverter();
+
+                    // 準備一個變數來儲存 FFmpeg 需要的目標格式標籤
+                    string targetFormat = "";
+
+                    // 根據使用者選擇的 FilterIndex 決定目標格式
+                    switch (sfdSave.FilterIndex)
                     {
-                        // 選項 1, 2, 3 用 NAudio
-                        using (var reader = new AudioFileReader(txtPath.Text))
-                        {
-                            switch (sfdSave.FilterIndex)
-                            {
-                                case 1: // MP3
-                                    using (var writer = new LameMP3FileWriter(sfdSave.FileName, reader.WaveFormat, 128))
-                                    {
-                                        reader.CopyTo(writer);
-                                    }
-                                    break;
-                                case 2: // AAC
-                                    MediaFoundationEncoder.EncodeToAac(reader, sfdSave.FileName);
-                                    break;
-                                case 3: // WMA
-                                    MediaFoundationEncoder.EncodeToWma(reader, sfdSave.FileName);
-                                    break;
-                            }
-                        }
+                        case 1:
+                            targetFormat = "mp3";
+                            break;
+                        case 2:
+                            targetFormat = "ipod"; // 在 FFmpeg 中，轉換為 .m4a 容器通常使用 ipod 標籤
+                            break;
+                        case 3:
+                            targetFormat = "asf";  // 在 FFmpeg 中，WMA 音訊通常封裝在 asf 容器中
+                            break;
+                        case 4:
+                            targetFormat = "flac";
+                            break;
                     }
-                    else if (sfdSave.FilterIndex == 4)
-                    {
-                        // 選項 4 FLAC 用 NReco (底層為 FFmpeg) 處理
-                        var ffMpeg = new FFMpegConverter();
-                        ffMpeg.ConvertMedia(txtPath.Text, sfdSave.FileName, "flac");
-                    }
+
+                    // 執行轉換 (來源路徑, 目標路徑, 目標格式)
+                    ffMpeg.ConvertMedia(txtPath.Text, sfdSave.FileName, targetFormat);
 
                     MessageBox.Show("轉檔成功！\n檔案已儲存至：\n" + sfdSave.FileName, "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -193,7 +190,6 @@ namespace WAV音效檔播放器
                 }
                 finally
                 {
-                    // 復原標題文字
                     this.Text = "WAV音效檔播放器";
                 }
             }
